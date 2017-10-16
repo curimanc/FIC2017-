@@ -10,12 +10,19 @@ using namespace std;
 using namespace cv;
 //initial min and max HSV filter values.
 //these will be changed using trackbars
-int H_MIN = 0;
-int H_MAX = 256;
-int S_MIN = 0;
-int S_MAX = 256;
+int H_MIN = 29;
+int H_MAX = 180;
+int S_MIN = 50;
+int S_MAX = 225;
 int V_MIN = 0;
-int V_MAX = 256;
+int V_MAX= 256;
+
+int H_MIN2 = 28;
+int H_MAX2 = 179;
+int S_MIN2 = 23;
+int S_MAX2 = 218;
+int V_MIN2 = 228;
+int V_MAX2 = 256;
 //default capture width and height
 const int FRAME_WIDTH = 640;
 const int FRAME_HEIGHT = 480;
@@ -30,7 +37,7 @@ const std::string windowName1 = "HSV Image";
 const std::string windowName2 = "Thresholded Image";
 const std::string windowName3 = "After Morphological Operations";
 const std::string trackbarWindowName = "Trackbars";
-
+const std::string trackbar = "Trackbar2";
 
 void on_mouse(int e, int x, int y, int d, void *ptr)
 {
@@ -58,6 +65,7 @@ void createTrackbars() {
 
 
 	namedWindow(trackbarWindowName, 0);
+        
 	//create memory to store trackbar name on window
 	char TrackbarName[50];
 	sprintf(TrackbarName, "H_MIN", H_MIN);
@@ -77,7 +85,27 @@ void createTrackbars() {
 	createTrackbar("S_MAX", trackbarWindowName, &S_MAX, S_MAX, on_trackbar);
 	createTrackbar("V_MIN", trackbarWindowName, &V_MIN, V_MAX, on_trackbar);
 	createTrackbar("V_MAX", trackbarWindowName, &V_MAX, V_MAX, on_trackbar);
-
+    
+//################
+	char TrackbarName2[50];
+        namedWindow(trackbar, 0);
+	sprintf(TrackbarName2, "H_MIN2", H_MIN2);
+	sprintf(TrackbarName2, "H_MAX2", H_MAX2);
+	sprintf(TrackbarName2, "S_MIN2", S_MIN2);
+	sprintf(TrackbarName2, "S_MAX2", S_MAX2);
+	sprintf(TrackbarName2, "V_MIN2", V_MIN2);
+	sprintf(TrackbarName2, "V_MAX2", V_MAX2);
+	//create trackbars and insert them into window
+	//3 parameters are: the address of the variable that is changing when the trackbar is moved(eg.H_LOW),
+	//the max value the trackbar can move (eg. H_HIGH),
+	//and the function that is called whenever the trackbar is moved(eg. on_trackbar)
+	//                                  ---->    ---->     ---->
+	createTrackbar("H_MIN2", trackbar, &H_MIN2, H_MAX2, on_trackbar);
+	createTrackbar("H_MAX2", trackbar, &H_MAX2, H_MAX2, on_trackbar);
+	createTrackbar("S_MIN2", trackbar, &S_MIN2, S_MAX2, on_trackbar);
+	createTrackbar("S_MAX2", trackbar, &S_MAX2, S_MAX2, on_trackbar);
+	createTrackbar("V_MIN2", trackbar, &V_MIN2, V_MAX2, on_trackbar);
+	createTrackbar("V_MAX2", trackbar, &V_MAX2, V_MAX2, on_trackbar);
 
 }
 void drawObject(int x, int y, Mat &frame) {
@@ -197,7 +225,7 @@ int main(int argc, char* argv[])
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
-	capture.open(0);
+	capture.open("rtmp://172.16.254.99/live/nimic");
 	//set height and width of capture frame
 	capture.set(CV_CAP_PROP_FRAME_WIDTH, FRAME_WIDTH);
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
@@ -206,7 +234,7 @@ int main(int argc, char* argv[])
 
 
 
-	
+
 	while (1) {
 
 
@@ -217,6 +245,7 @@ int main(int argc, char* argv[])
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
 		inRange(HSV, Scalar(H_MIN, S_MIN, V_MIN), Scalar(H_MAX, S_MAX, V_MAX), threshold);
+		inRange(HSV, Scalar(H_MIN2, S_MIN2, V_MIN2), Scalar(H_MAX2, S_MAX2, V_MAX2), threshold);
 		//perform morphological operations on thresholded image to eliminate noise
 		//and emphasize the filtered object(s)
 		if (useMorphOps)
@@ -230,7 +259,7 @@ int main(int argc, char* argv[])
 		//show frames
 		imshow(windowName2, threshold);
 		imshow(windowName, cameraFeed);
-		imshow(windowName1, HSV);
+		//imshow(windowName1, HSV);
 		setMouseCallback("Original Image", on_mouse, &p);
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
@@ -239,4 +268,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }
-
