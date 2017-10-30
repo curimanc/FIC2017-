@@ -5,6 +5,10 @@
 #include "opencv2/highgui/highgui.hpp"
 //#include <opencv2\cv.h>
 #include "opencv2/opencv.hpp"
+#include<stdio.h> //printf
+#include<string.h>    //strlen
+#include<sys/socket.h>    //socket
+#include<arpa/inet.h> //inet_addr
 
 using namespace std;
 using namespace cv;
@@ -39,6 +43,34 @@ const std::string windowName3 = "After Morphological Operations";
 const std::string trackbarWindowName = "Trackbars";
 const std::string trackbar = "Trackbar2";
 
+//TCP connections
+int sock;
+struct sockaddr_in server;
+char message[3];
+
+void init_connection(){
+	//Create socket
+	    sock = socket(AF_INET , SOCK_STREAM , 0);
+	    if (sock == -1)
+	    {
+	        printf("Could not create socket");
+	    }
+	    puts("Socket created");
+
+	    server.sin_addr.s_addr = inet_addr("193.226.12.217");
+	    server.sin_family = AF_INET;
+	    server.sin_port = htons( 20232 );
+
+	    //Connect to remote server
+	    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
+	    {
+	        perror("connect failed. Error");
+	      
+	    }
+
+	    puts("Connected\n");
+
+}
 void on_mouse(int e, int x, int y, int d, void *ptr)
 {
 	if (e == EVENT_LBUTTONDOWN)
@@ -222,6 +254,8 @@ int main(int argc, char* argv[])
 	int x = 0, y = 0;
 	//create slider bars for HSV filtering
 	createTrackbars();
+	//create socket
+	init_connection();
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
@@ -239,7 +273,7 @@ int main(int argc, char* argv[])
 
 
 		//store image to matrix
-		capture.read(cameraFeed);
+	/*	capture.read(cameraFeed);
 		if(cameraFeed.empty()){
 			printf("Camera is empty\n");
 			exit(1);
@@ -269,6 +303,17 @@ int main(int argc, char* argv[])
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
 		waitKey(30);
+*/
+		printf("Enter message : ");
+			 scanf("%s" , message);
+
+			 //Send some data
+			 if( send(sock , message , strlen(message) , 0) < 0)
+			 {
+					 puts("Send failed");
+
+			 }
+
 	}
 
 	return 0;
