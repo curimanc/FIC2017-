@@ -65,7 +65,7 @@ void createTrackbars() {
 
 
 	namedWindow(trackbarWindowName, 0);
-        
+
 	//create memory to store trackbar name on window
 	char TrackbarName[50];
 	sprintf(TrackbarName, "H_MIN", H_MIN);
@@ -85,7 +85,7 @@ void createTrackbars() {
 	createTrackbar("S_MAX", trackbarWindowName, &S_MAX, S_MAX, on_trackbar);
 	createTrackbar("V_MIN", trackbarWindowName, &V_MIN, V_MAX, on_trackbar);
 	createTrackbar("V_MAX", trackbarWindowName, &V_MAX, V_MAX, on_trackbar);
-    
+
 //################
 	char TrackbarName2[50];
         namedWindow(trackbar, 0);
@@ -240,6 +240,11 @@ int main(int argc, char* argv[])
 
 		//store image to matrix
 		capture.read(cameraFeed);
+		if(cameraFeed.empty()){
+			printf("Camera is empty\n");
+			exit(1);
+		}
+
 		//convert frame from BGR to HSV colorspace
 		cvtColor(cameraFeed, HSV, COLOR_BGR2HSV);
 		//filter HSV image between values and store filtered image to
