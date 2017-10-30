@@ -9,6 +9,8 @@
 #include<string.h>    //strlen
 #include<sys/socket.h>    //socket
 #include<arpa/inet.h> //inet_addr
+#include <unistd.h>
+
 
 using namespace std;
 using namespace cv;
@@ -65,7 +67,7 @@ void init_connection(){
 	    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
 	    {
 	        perror("connect failed. Error");
-	      
+
 	    }
 
 	    puts("Connected\n");
@@ -235,6 +237,40 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 		else putText(cameraFeed, "TOO MUCH NOISE! ADJUST FILTER", Point(0, 50), 1, 2, Scalar(0, 0, 255), 2);
 	}
 }
+
+int check(char c){
+
+ if((c=='f')||(c=='s')||(c=='b')||(c=='r')||(c=='l'))
+   return 1;
+else
+   return 0;
+}
+
+void send_string(char *sir){
+  int i;
+	char message[3];
+	for(i=0;i<strlen(sir);i++){
+		if(check(sir[i])){
+			message[0]=sir[i];
+  //    printf("Comanda: %c\n",sir[i]);
+			strcat(message,"  ");
+		//	puts(message);
+  //   printf("DEBUG_ Am ajuns la send\n");
+			if( send(sock , message , strlen(message) , 0) < 0)
+			{
+				 puts("Send failed");
+			}
+			usleep(1000000);
+		}
+	}
+	strcpy(message,"s  ");
+	if( send(sock , message , strlen(message) , 0) < 0)
+	{
+		 puts("Send failed");
+	}
+ }
+
+
 int main(int argc, char* argv[])
 {
 
@@ -253,9 +289,11 @@ int main(int argc, char* argv[])
 	//x and y values for the location of the object
 	int x = 0, y = 0;
 	//create slider bars for HSV filtering
+		init_connection();
+	/*
 	createTrackbars();
 	//create socket
-	init_connection();
+
 	//video capture object to acquire webcam feed
 	VideoCapture capture;
 	//open capture object at location zero (default location for webcam)
@@ -267,7 +305,9 @@ int main(int argc, char* argv[])
 	//all of our operations will be performed within this loop
 
 
+*/
 
+ send_string("fsbsyufb");
 
 	while (1) {
 
@@ -303,7 +343,7 @@ int main(int argc, char* argv[])
 		//delay 30ms so that screen can refresh.
 		//image will not appear without this waitKey() command
 		waitKey(30);
-*/
+
 		printf("Enter message : ");
 			 scanf("%s" , message);
 
@@ -314,7 +354,8 @@ int main(int argc, char* argv[])
 
 			 }
 
-	}
 
+*/
+}
 	return 0;
 }
