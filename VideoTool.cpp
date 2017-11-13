@@ -16,7 +16,7 @@ using namespace std;
 using namespace cv;
 //initial min and max HSV filter values.
 //these will be changed using trackbars
-int H_MIN = 29;
+int H_MIN = 37;
 int H_MAX = 180;
 int S_MIN = 50;
 int S_MAX = 225;
@@ -24,7 +24,7 @@ int V_MIN = 0;
 int V_MAX= 256;
 
 int H_MIN2 = 28;
-int H_MAX2 = 179;
+int H_MAX2 = 150;
 int S_MIN2 = 23;
 int S_MAX2 = 218;
 int V_MIN2 = 228;
@@ -227,7 +227,6 @@ void trackFilteredObject(int &x, int &y, Mat threshold, Mat &cameraFeed) {
 			if (objectFound == true) {
 				putText(cameraFeed, "Tracking Object", Point(0, 50), 2, 1, Scalar(0, 255, 0), 2);
 				//draw object location on screen
-				//cout << x << "," << y;
 				drawObject(x, y, cameraFeed);
 
 			}
@@ -252,10 +251,10 @@ void send_string(char *sir){
 	for(i=0;i<strlen(sir);i++){
 		if(check(sir[i])){
 			message[0]=sir[i];
-  //    printf("Comanda: %c\n",sir[i]);
+  
 			strcat(message,"  ");
 		//	puts(message);
-  //   printf("DEBUG_ Am ajuns la send\n");
+
 			if( send(sock , message , strlen(message) , 0) < 0)
 			{
 				 puts("Send failed");
@@ -286,11 +285,14 @@ int main(int argc, char* argv[])
 	Mat HSV;
 	//matrix storage for binary threshold image
 	Mat threshold;
+        Mat threshold2;
 	//x and y values for the location of the object
-	int x = 0, y = 0;
+	int x1 = 0, y1 = 0,x2 = 0, y2 = 0,diff_x1 = 0, diff_x2 = 0, diff_y1 = 0, diff_y2 = 0, cnt = 0, diff_x,diff_y;
 	//create slider bars for HSV filtering
+
+ 		//socket connection
 		init_connection();
-	/*
+	
 	createTrackbars();
 	//create socket
 
@@ -305,15 +307,13 @@ int main(int argc, char* argv[])
 	//all of our operations will be performed within this loop
 
 
-*/
 
- send_string("fsbsyufb");
 
 	while (1) {
 
-
+		cnt++;
 		//store image to matrix
-	/*	capture.read(cameraFeed);
+		capture.read(cameraFeed);
 		if(cameraFeed.empty()){
 			printf("Camera is empty\n");
 			exit(1);
@@ -324,17 +324,52 @@ int main(int argc, char* argv[])
 		//filter HSV image between values and store filtered image to
 		//threshold matrix
 		inRange(HSV, Scalar(H_MIN, S_MIN, V_MIN), Scalar(H_MAX, S_MAX, V_MAX), threshold);
-		inRange(HSV, Scalar(H_MIN2, S_MIN2, V_MIN2), Scalar(H_MAX2, S_MAX2, V_MAX2), threshold);
-		//perform morphological operations on thresholded image to eliminate noise
-		//and emphasize the filtered object(s)
 		if (useMorphOps)
 			morphOps(threshold);
 		//pass in thresholded frame to our object tracking function
 		//this function will return the x and y coordinates of the
 		//filtered object
-		if (trackObjects)
-			trackFilteredObject(x, y, threshold, cameraFeed);
+		if (trackObjects){
+			trackFilteredObject(x1, y1, threshold, cameraFeed);
+ 			cout<<"First: X="<<x<<",Y="<<y<<endl;
+		}
 
+		inRange(HSV, Scalar(H_MIN2, S_MIN2, V_MIN2), Scalar(H_MAX2, S_MAX2, V_MAX2), threshold2);
+		//perform morphological operations on thresholded image to eliminate noise
+		//and emphasize the filtered object(s)
+		if (useMorphOps)
+			morphOps(threshold2);
+		//pass in thresholded frame to our object tracking function
+		//this function will return the x and y coordinates of the
+		//filtered object
+		if (trackObjects){
+			trackFilteredObject(x2, y2, threshold2, cameraFeed);
+			cout<<"Second: X="<<x<<",Y="<<y<<endl;
+		}
+
+		if(cnt==1){
+		diff_x1=x2-x1;
+		diff_y1=y2-y1;
+                send_string("fs");
+		}
+		else if( cnt == 2)
+		{
+		diff_x2=x2-x1;
+		diff_y2=y2-y1;	
+		diff_x=diff_x2-diff_x1;
+		diff_y=diff_y2-diff_y1;
+			
+ 			if(diff_x<0)
+			   printf("Dreapta\n");
+			else if (diff_x>0)
+			   printf("Stanga\n");
+			else if (diff_y<0)
+			   printf("Jos\n");
+			else if (diff_y>0)
+			   printf("Sus\n");
+		}
+		else
+		{ }
 		//show frames
 		imshow(windowName2, threshold);
 		imshow(windowName, cameraFeed);
@@ -344,18 +379,18 @@ int main(int argc, char* argv[])
 		//image will not appear without this waitKey() command
 		waitKey(30);
 
-		printf("Enter message : ");
-			 scanf("%s" , message);
+		////printf("Enter message : ");
+		//	 scanf("%s" , message);
 
 			 //Send some data
 			 if( send(sock , message , strlen(message) , 0) < 0)
 			 {
-					 puts("Send failed");
+					//puts("Send failed");
 
 			 }
 
 
-*/
+
 }
 	return 0;
 }
