@@ -49,6 +49,8 @@ const std::string trackbar = "Trackbar2";
 int sock;
 struct sockaddr_in server;
 char message[3];
+static int dir = 0;
+static int first_move = 0;
 
 void init_connection(){
 	//Create socket
@@ -61,7 +63,7 @@ void init_connection(){
 
 	    server.sin_addr.s_addr = inet_addr("193.226.12.217");
 	    server.sin_family = AF_INET;
-	    server.sin_port = htons( 20232 );
+	    server.sin_port = htons( 20236 );
 
 	    //Connect to remote server
 	    if (connect(sock , (struct sockaddr *)&server , sizeof(server)) < 0)
@@ -269,7 +271,28 @@ void send_string(char *sir){
 	}
  }
 
-
+void algo () {
+	if (first_move == 0 ) {
+	 send_string("rrrs");
+	 first_move = 1;
+	}
+	if (first_move != 0) {
+		switch (dir){
+			case 1: send_string("ffffffs");
+				break;
+			case 2: send_string("lllllls");
+				break;
+			case 3: send_string("bbbbbbs");
+				break;
+			case 4: send_string("rrrrrrs");
+				break;
+			default:  break;
+		}	
+	}
+	if (dir == 4) dir = 1;
+		else dir++;
+	printf("Directie: %d\n",dir);
+}
 int main(int argc, char* argv[])
 {
 
@@ -305,7 +328,7 @@ int main(int argc, char* argv[])
 	capture.set(CV_CAP_PROP_FRAME_HEIGHT, FRAME_HEIGHT);
 	//start an infinite loop where webcam feed is copied to cameraFeed matrix
 	//all of our operations will be performed within this loop
-
+	
 
 
 
@@ -331,7 +354,7 @@ int main(int argc, char* argv[])
 		//filtered object
 		if (trackObjects){
 			trackFilteredObject(x1, y1, threshold, cameraFeed);
- 			cout<<"First: X="<<x<<",Y="<<y<<endl;
+ 			cout<<"First: X="<<x1<<",Y="<<y1<<endl;
 		}
 
 		inRange(HSV, Scalar(H_MIN2, S_MIN2, V_MIN2), Scalar(H_MAX2, S_MAX2, V_MAX2), threshold2);
@@ -344,32 +367,10 @@ int main(int argc, char* argv[])
 		//filtered object
 		if (trackObjects){
 			trackFilteredObject(x2, y2, threshold2, cameraFeed);
-			cout<<"Second: X="<<x<<",Y="<<y<<endl;
+			cout<<"Second: X="<<x2<<",Y="<<y2<<endl;
 		}
 
-		if(cnt==1){
-		diff_x1=x2-x1;
-		diff_y1=y2-y1;
-                send_string("fs");
-		}
-		else if( cnt == 2)
-		{
-		diff_x2=x2-x1;
-		diff_y2=y2-y1;	
-		diff_x=diff_x2-diff_x1;
-		diff_y=diff_y2-diff_y1;
-			
- 			if(diff_x<0)
-			   printf("Dreapta\n");
-			else if (diff_x>0)
-			   printf("Stanga\n");
-			else if (diff_y<0)
-			   printf("Jos\n");
-			else if (diff_y>0)
-			   printf("Sus\n");
-		}
-		else
-		{ }
+		
 		//show frames
 		imshow(windowName2, threshold);
 		imshow(windowName, cameraFeed);
@@ -383,11 +384,12 @@ int main(int argc, char* argv[])
 		//	 scanf("%s" , message);
 
 			 //Send some data
-			 if( send(sock , message , strlen(message) , 0) < 0)
-			 {
+			// if( send(sock , message , strlen(message) , 0) < 0)
+			// {
 					//puts("Send failed");
-
-			 }
+//
+//			 }
+		algo();
 
 
 
